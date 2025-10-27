@@ -554,8 +554,41 @@
     editButton.onclick = () => openSessionModal(session.id);
     actions.appendChild(editButton);
 
+    const deleteButton = document.createElement('button');
+    deleteButton.className = 'btn-danger';
+    deleteButton.type = 'button';
+    deleteButton.textContent = 'Delete';
+    deleteButton.onclick = () => deleteSession(session.id);
+    actions.appendChild(deleteButton);
+
     row.append(text, actions);
     return row;
+  }
+
+  function deleteSession(id) {
+    const session = state.sessions.find((item) => item.id === id);
+    if (!session) return;
+
+    const project = state.projects.find((item) => item.id === session.projectId);
+    const projectName = project ? project.name || '(Unnamed Project)' : 'Unknown Project';
+    const confirmed = confirm(
+      `Delete the session on ${fmtDT(session.start)} for "${projectName}"?\n\nThis action cannot be undone.`,
+    );
+    if (!confirmed) return;
+
+    state.sessions = state.sessions.filter((item) => item.id !== id);
+
+    if (pendingNoteId === id) {
+      pendingNoteId = null;
+      hideNoteBar();
+    }
+
+    if (editingSessionId === id) {
+      closeSessionModal();
+    }
+
+    schedulePersist();
+    render();
   }
 
   function buildArchivedSessions(projectId) {
