@@ -298,6 +298,29 @@ tbody td {
   font-size: 13px;
 }
 
+.entry-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 6px 0;
+}
+
+.entry-text {
+  flex: 1;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.entry-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.entry-actions button {
+  font-size: 12px;
+  padding: 4px 8px;
+}
+
 .modal {
   position: fixed;
   inset: 0;
@@ -336,6 +359,22 @@ tbody td {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
+}
+
+.session-form {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.session-duration {
+  display: flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px solid var(--stroke);
+  border-radius: 12px;
+  background: rgba(10, 14, 22, 0.7);
+  color: var(--muted);
+  font-size: 14px;
 }
 
 @media (min-width: 680px) {
