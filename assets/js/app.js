@@ -9,6 +9,7 @@
   let editingSessionId = null;
   let view = 'daily';
   let anchor = today();
+  const pickerRegistry = new Map();
 
   const $ = (id) => document.getElementById(id);
 
@@ -97,6 +98,110 @@
     return Number.isNaN(time) ? null : time;
   }
 
+  function pickerFormat(type) {
+    return type === 'datetime' ? 'Y-m-d\\TH:i' : 'Y-m-d';
+  }
+
+  function installNativePickerFallback(input) {
+    if (!input || input.dataset.pickerFallback === 'true') return;
+    if (typeof input.showPicker !== 'function') return;
+
+    const open = () => {
+      try {
+        input.showPicker();
+      } catch (error) {
+        // Ignore unsupported environments
+      }
+    };
+
+    const handleKeydown = (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        open();
+      }
+    };
+
+    input.addEventListener('focus', open);
+    input.addEventListener('click', open);
+    input.addEventListener('keydown', handleKeydown);
+    input.dataset.pickerFallback = 'true';
+  }
+
+  function createFlatpickrInstance(input, type) {
+    if (typeof window.flatpickr !== 'function') return null;
+
+    const format = pickerFormat(type);
+    const instance = window.flatpickr(input, {
+      allowInput: true,
+      clickOpens: true,
+      dateFormat: format,
+      enableTime: type === 'datetime',
+      minuteIncrement: 1,
+      disableMobile: false,
+      onChange: () => {
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      },
+    });
+
+    return instance;
+  }
+
+  function ensurePicker(input, type) {
+    if (!input) return null;
+
+    const existing = pickerRegistry.get(input);
+    if (existing) {
+      if (existing.instance) {
+        return existing.instance;
+      }
+      if (typeof window.flatpickr === 'function') {
+        const instance = createFlatpickrInstance(input, existing.type);
+        pickerRegistry.set(input, {
+          instance,
+          type: existing.type,
+          format: pickerFormat(existing.type),
+        });
+        return instance;
+      }
+      return null;
+    }
+
+    const format = pickerFormat(type);
+    let instance = null;
+
+    if (typeof window.flatpickr === 'function') {
+      instance = createFlatpickrInstance(input, type);
+    } else {
+      installNativePickerFallback(input);
+    }
+
+    pickerRegistry.set(input, { instance, type, format });
+    return instance;
+  }
+
+  function syncPickerValue(inputId, type) {
+    const input = $(inputId);
+    if (!input) return;
+
+    const instance = ensurePicker(input, type);
+    const record = pickerRegistry.get(input);
+    if (instance) {
+      const value = input.value || null;
+      if (value) {
+        instance.setDate(value, false, record?.format ?? pickerFormat(type));
+      } else {
+        instance.clear();
+      }
+    }
+  }
+
+  function initializePickers() {
+    syncPickerValue('startDate', 'date');
+    syncPickerValue('endDate', 'date');
+    syncPickerValue('sessionStart', 'datetime');
+    syncPickerValue('sessionEnd', 'datetime');
+  }
+
   function openProjectModal(mode = 'add', id = null) {
     const title = $('projectModalTitle');
     const editingIdEl = $('editingProjectId');
@@ -123,20 +228,8 @@
 
     setTimeout(() => $('projNo').focus(), 0);
 
-    ['startDate', 'endDate'].forEach((inputId) => {
-      const input = $(inputId);
-      input.addEventListener(
-        'click',
-        (event) => {
-          try {
-            event.target.showPicker();
-          } catch (error) {
-            // Ignore lack of support
-          }
-        },
-        { once: true },
-      );
-    });
+    syncPickerValue('startDate', 'date');
+    syncPickerValue('endDate', 'date');
   }
 
   function closeProjectModal() {
@@ -265,6 +358,8 @@
     $('editingSessionId').value = session.id;
     $('sessionModalTitle').textContent = 'Edit Session';
 
+    syncPickerValue('sessionStart', 'datetime');
+    syncPickerValue('sessionEnd', 'datetime');
     updateSessionDurationDisplay();
 
     const modal = $('sessionModal');
@@ -866,6 +961,7 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     registerEvents();
+    initializePickers();
     render();
 
     if (state.activeTimer) {
