@@ -53,6 +53,7 @@
                 <select id="projectSelect" aria-label="Select project"></select>
                 <button id="startBtn" class="btn-accent" type="button">Start</button>
                 <button id="stopBtn" type="button">Stop</button>
+                <button id="openManualModal" class="btn-ghost" type="button">Manual Entry</button>
               </div>
             </div>
             <div class="b">
@@ -161,6 +162,48 @@
           <input type="hidden" id="editingProjectId" />
           <div class="row" style="justify-content: flex-end">
             <button id="saveProject" class="btn-primary" type="button">Save Project</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="manualModal"
+      class="modal hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="manualModalTitle"
+    >
+      <div class="dialog">
+        <div class="h">
+          <h2 id="manualModalTitle">Manual Time Entry</h2>
+          <button id="closeManualModal" class="btn-ghost" type="button" aria-label="Close manual entry form">✕</button>
+        </div>
+        <div class="b">
+          <div class="form-grid session-form" style="margin-bottom: 12px">
+            <div>
+              <label class="muted" for="manualProject">Project</label>
+              <select id="manualProject" required></select>
+            </div>
+            <div>
+              <label class="muted" for="manualStart">Start</label>
+              <input id="manualStart" type="datetime-local" required />
+            </div>
+            <div>
+              <label class="muted" for="manualEnd">End</label>
+              <input id="manualEnd" type="datetime-local" required />
+            </div>
+            <div>
+              <label class="muted" for="manualDuration">Duration</label>
+              <div id="manualDuration" class="session-duration" aria-live="polite">—</div>
+            </div>
+            <div style="grid-column: 1 / -1">
+              <label class="muted" for="manualNote">Notes</label>
+              <textarea id="manualNote" placeholder="Optional context for this session..."></textarea>
+            </div>
+          </div>
+          <div class="row" style="justify-content: flex-end">
+            <button id="saveManualEntry" class="btn-primary" type="button">Add Entry</button>
           </div>
         </div>
       </div>

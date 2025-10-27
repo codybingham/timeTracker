@@ -200,6 +200,8 @@
     syncPickerValue('endDate', 'date');
     syncPickerValue('sessionStart', 'datetime');
     syncPickerValue('sessionEnd', 'datetime');
+    syncPickerValue('manualStart', 'datetime');
+    syncPickerValue('manualEnd', 'datetime');
   }
 
   function openProjectModal(mode = 'add', id = null) {
@@ -284,8 +286,8 @@
     render();
   }
 
-  function populateSessionProjectOptions(selectedId) {
-    const select = $('sessionProject');
+  function populateSessionProjectOptions(selectedId, selectId = 'sessionProject') {
+    const select = $(selectId);
     if (!select) return;
     select.innerHTML = '';
 
@@ -345,6 +347,35 @@
     durationEl.textContent = formatHM(Math.round(diff / 1000));
   }
 
+  function updateManualDurationDisplay() {
+    const durationEl = $('manualDuration');
+    if (!durationEl) return;
+
+    const startValue = $('manualStart')?.value;
+    const endValue = $('manualEnd')?.value;
+
+    if (!startValue || !endValue) {
+      durationEl.textContent = '—';
+      return;
+    }
+
+    const start = parseDateTimeLocal(startValue);
+    const end = parseDateTimeLocal(endValue);
+
+    if (start === null || end === null) {
+      durationEl.textContent = '—';
+      return;
+    }
+
+    const diff = end - start;
+    if (diff <= 0) {
+      durationEl.textContent = 'End must be after start';
+      return;
+    }
+
+    durationEl.textContent = formatHM(Math.round(diff / 1000));
+  }
+
   function openSessionModal(id) {
     const session = state.sessions.find((item) => item.id === id);
     if (!session) return;
@@ -376,6 +407,86 @@
     if (hiddenId) hiddenId.value = '';
     const durationEl = $('sessionDuration');
     if (durationEl) durationEl.textContent = '—';
+  }
+
+  function resetManualModal() {
+    const durationEl = $('manualDuration');
+    if (durationEl) durationEl.textContent = '—';
+    const noteEl = $('manualNote');
+    if (noteEl) noteEl.value = '';
+  }
+
+  function openManualEntryModal() {
+    const projectSelect = $('projectSelect');
+    const defaultProject = projectSelect ? projectSelect.value : '';
+    populateSessionProjectOptions(defaultProject || undefined, 'manualProject');
+
+    const now = Date.now();
+    const defaultEnd = toLocalDateTimeInputValue(now);
+    const defaultStart = toLocalDateTimeInputValue(now - 3600000);
+
+    $('manualProject').value = defaultProject || '';
+    $('manualStart').value = defaultStart;
+    $('manualEnd').value = defaultEnd;
+
+    resetManualModal();
+    syncPickerValue('manualStart', 'datetime');
+    syncPickerValue('manualEnd', 'datetime');
+    updateManualDurationDisplay();
+
+    const modal = $('manualModal');
+    modal.classList.remove('hidden');
+
+    setTimeout(() => $('manualProject').focus(), 0);
+  }
+
+  function closeManualModal() {
+    const modal = $('manualModal');
+    if (modal) modal.classList.add('hidden');
+    resetManualModal();
+  }
+
+  function saveManualEntryFromModal() {
+    const projectId = $('manualProject').value;
+    if (!projectId) {
+      alert('Select a project for this session.');
+      return;
+    }
+
+    const startValue = $('manualStart').value;
+    const endValue = $('manualEnd').value;
+    const start = parseDateTimeLocal(startValue);
+    const end = parseDateTimeLocal(endValue);
+
+    if (start === null) {
+      alert('Provide a valid start date and time.');
+      return;
+    }
+    if (end === null) {
+      alert('Provide a valid end date and time.');
+      return;
+    }
+    if (end <= start) {
+      alert('End time must be after the start time.');
+      return;
+    }
+
+    const note = $('manualNote').value.trim();
+    const seconds = Math.max(1, Math.round((end - start) / 1000));
+
+    state.sessions.push({
+      id: uid(),
+      projectId,
+      start,
+      end,
+      seconds,
+      note,
+      source: 'manual',
+    });
+
+    schedulePersist();
+    closeManualModal();
+    render();
   }
 
   function saveSessionFromModal() {
@@ -978,6 +1089,15 @@
     $('saveSession').onclick = saveSessionFromModal;
     $('sessionStart').addEventListener('input', updateSessionDurationDisplay);
     $('sessionEnd').addEventListener('input', updateSessionDurationDisplay);
+
+    $('openManualModal').onclick = openManualEntryModal;
+    $('closeManualModal').onclick = closeManualModal;
+    $('manualModal').onclick = (event) => {
+      if (event.target.id === 'manualModal') closeManualModal();
+    };
+    $('saveManualEntry').onclick = saveManualEntryFromModal;
+    $('manualStart').addEventListener('input', updateManualDurationDisplay);
+    $('manualEnd').addEventListener('input', updateManualDurationDisplay);
 
     $('startBtn').onclick = startTimer;
     $('stopBtn').onclick = stopTimer;
