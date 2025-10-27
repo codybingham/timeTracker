@@ -115,6 +115,10 @@ select {
   outline: none;
 }
 
+.flatpickr-input {
+  width: 100%;
+}
+
 input:focus,
 textarea:focus,
 select:focus {
@@ -391,6 +395,56 @@ input[type="time"] {
   z-index: 5;
   background: #0e131d;
   color-scheme: dark;
+}
+
+.flatpickr-calendar {
+  background: rgba(13, 18, 28, 0.96);
+  border: 1px solid var(--stroke);
+  box-shadow: var(--shadow);
+  color: var(--text);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.flatpickr-months .flatpickr-month,
+.flatpickr-weekdays,
+.flatpickr-weekday,
+.flatpickr-time {
+  background: transparent;
+  color: var(--muted);
+}
+
+.flatpickr-day {
+  color: var(--text);
+  border-radius: 8px;
+}
+
+.flatpickr-day.today,
+.flatpickr-day:hover,
+.flatpickr-day:focus {
+  background: rgba(76, 201, 240, 0.14);
+  border-color: rgba(76, 201, 240, 0.38);
+}
+
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange,
+.flatpickr-time input:hover,
+.flatpickr-time input:focus {
+  background: rgba(76, 201, 240, 0.28) !important;
+  color: var(--text) !important;
+  border-color: rgba(76, 201, 240, 0.6) !important;
+}
+
+.flatpickr-time input,
+.flatpickr-time-separator,
+.flatpickr-am-pm {
+  color: var(--text);
+}
+
+.flatpickr-am-pm:focus,
+.flatpickr-am-pm:hover {
+  background: rgba(76, 201, 240, 0.2);
 }
 
 #timeDisplay {
