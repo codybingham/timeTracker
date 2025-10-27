@@ -36,6 +36,7 @@ header {
   background: rgba(8, 12, 20, 0.6);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--stroke);
+  flex-wrap: wrap;
 }
 
 header h1 {
@@ -60,6 +61,7 @@ header .spacer {
   max-width: 1200px;
   margin: 24px auto;
   padding: 0 16px;
+  width: 100%;
 }
 
 .grid {
@@ -165,6 +167,7 @@ button:hover {
 .tabs {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .tabs button[aria-selected="true"] {
@@ -236,6 +239,8 @@ tbody td {
   gap: 12px;
   list-style: none;
   cursor: pointer;
+  flex-wrap: wrap;
+  min-width: 0;
 }
 
 .project-summary::-webkit-details-marker {
@@ -246,6 +251,7 @@ tbody td {
   font-weight: 800;
   font-size: 16px;
   margin: 0;
+  word-break: break-word;
 }
 
 .project-sub {
@@ -258,6 +264,7 @@ tbody td {
   margin-left: auto;
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .project-actions button {
@@ -382,5 +389,76 @@ input[type="time"] {
   * {
     transition-duration: 0.001ms !important;
     animation-duration: 0.001ms !important;
+  }
+}
+
+@media (max-width: 840px) {
+  header {
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  header svg {
+    flex: 0 0 auto;
+  }
+
+  header h1 {
+    font-size: 16px;
+  }
+
+  header .tag {
+    order: 3;
+  }
+
+  header .spacer {
+    display: none;
+  }
+
+  header button {
+    flex: 1 1 calc(50% - 6px);
+    min-width: 0;
+  }
+
+  header button.btn-danger {
+    flex-basis: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  body {
+    overflow-x: hidden;
+  }
+
+  header {
+    padding: 12px 14px;
+  }
+
+  header svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  header h1,
+  header .tag {
+    width: 100%;
+  }
+
+  .container {
+    margin: 16px auto;
+    padding: 0 12px;
+  }
+
+  .grid {
+    gap: 14px;
+  }
+
+  header button {
+    flex-basis: 100%;
+  }
+
+  .project-actions {
+    margin-left: 0;
+    width: 100%;
+    justify-content: flex-start;
   }
 }
