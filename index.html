@@ -20,11 +20,31 @@
       <h1>Time Tracker</h1>
       <span class="tag">Standalone • Local only</span>
       <span class="spacer" aria-hidden="true"></span>
-      <button id="btnExport" class="btn-ghost" type="button">Export JSON</button>
-      <input id="importFile" class="hidden" type="file" accept="application/json" />
-      <button id="btnImport" class="btn-ghost" type="button">Import</button>
-      <button id="btnCsv" class="btn-ghost" type="button">Export CSV</button>
-      <button id="btnClear" class="btn-danger" type="button">Clear All</button>
+      <button
+        id="actionToggle"
+        class="btn-ghost menu-toggle"
+        type="button"
+        aria-expanded="false"
+        aria-controls="actionMenu"
+      >
+        Actions
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M6 9l6 6 6-6"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </button>
+      <div id="actionMenu" class="header-actions">
+        <button id="btnExport" class="btn-ghost" type="button">Export JSON</button>
+        <input id="importFile" class="hidden" type="file" accept="application/json" />
+        <button id="btnImport" class="btn-ghost" type="button">Import</button>
+        <button id="btnCsv" class="btn-ghost" type="button">Export CSV</button>
+        <button id="btnClear" class="btn-danger" type="button">Clear All</button>
+      </div>
     </header>
 
     <main class="container">

@@ -1072,8 +1072,46 @@
     };
   }
 
+  function setupActionMenu() {
+    const toggle = $('actionToggle');
+    const menu = $('actionMenu');
+
+    if (!toggle || !menu) return;
+
+    const closeMenu = () => {
+      menu.classList.remove('is-open');
+      toggle.setAttribute('aria-expanded', 'false');
+    };
+
+    toggle.addEventListener('click', () => {
+      const isOpen = menu.classList.toggle('is-open');
+      toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      if (isOpen) {
+        const focusable = menu.querySelector('button, [href], [tabindex]:not([tabindex="-1"])');
+        if (focusable) {
+          focusable.focus();
+        }
+      }
+    });
+
+    document.addEventListener('click', (event) => {
+      if (!menu.classList.contains('is-open')) return;
+      if (event.target === toggle || toggle.contains(event.target)) return;
+      if (menu.contains(event.target)) return;
+      closeMenu();
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && menu.classList.contains('is-open')) {
+        closeMenu();
+        toggle.focus();
+      }
+    });
+  }
+
   function registerEvents() {
     registerTabs();
+    setupActionMenu();
 
     $('openProjectModal').onclick = () => openProjectModal('add');
     $('closeProject').onclick = closeProjectModal;
