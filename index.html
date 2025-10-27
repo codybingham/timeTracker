@@ -163,5 +163,48 @@
         </div>
       </div>
     </div>
+
+    <div
+      id="sessionModal"
+      class="modal hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="sessionModalTitle"
+    >
+      <div class="dialog">
+        <div class="h">
+          <h2 id="sessionModalTitle">Edit Session</h2>
+          <button id="closeSessionModal" class="btn-ghost" type="button" aria-label="Close session form">✕</button>
+        </div>
+        <div class="b">
+          <div class="form-grid session-form" style="margin-bottom: 12px">
+            <div>
+              <label class="muted" for="sessionProject">Project</label>
+              <select id="sessionProject" required></select>
+            </div>
+            <div>
+              <label class="muted" for="sessionStart">Start</label>
+              <input id="sessionStart" type="datetime-local" required />
+            </div>
+            <div>
+              <label class="muted" for="sessionEnd">End</label>
+              <input id="sessionEnd" type="datetime-local" required />
+            </div>
+            <div>
+              <label class="muted" for="sessionDuration">Duration</label>
+              <div id="sessionDuration" class="session-duration" aria-live="polite">—</div>
+            </div>
+            <div style="grid-column: 1 / -1">
+              <label class="muted" for="sessionNote">Notes</label>
+              <textarea id="sessionNote" placeholder="Optional context for this session..."></textarea>
+            </div>
+          </div>
+          <input type="hidden" id="editingSessionId" />
+          <div class="row" style="justify-content: flex-end">
+            <button id="saveSession" class="btn-primary" type="button">Save Session</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </body>
 </html>

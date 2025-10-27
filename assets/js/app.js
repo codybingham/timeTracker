@@ -6,6 +6,7 @@
   let persistTimer;
   let activeTick = null;
   let pendingNoteId = null;
+  let editingSessionId = null;
   let view = 'daily';
   let anchor = today();
 
@@ -79,6 +80,21 @@
 
   function fmtDT(timestamp) {
     return new Date(timestamp).toLocaleString();
+  }
+
+  function toLocalDateTimeInputValue(timestamp) {
+    if (typeof timestamp !== 'number') return '';
+    const date = new Date(timestamp);
+    if (Number.isNaN(date.getTime())) return '';
+    const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+    return local.toISOString().slice(0, 16);
+  }
+
+  function parseDateTimeLocal(value) {
+    if (!value) return null;
+    const date = new Date(value);
+    const time = date.getTime();
+    return Number.isNaN(time) ? null : time;
   }
 
   function openProjectModal(mode = 'add', id = null) {
@@ -172,6 +188,138 @@
 
     schedulePersist();
     closeProjectModal();
+    render();
+  }
+
+  function populateSessionProjectOptions(selectedId) {
+    const select = $('sessionProject');
+    if (!select) return;
+    select.innerHTML = '';
+
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = 'Select project...';
+    select.appendChild(placeholder);
+
+    state.projects.forEach((project) => {
+      const option = document.createElement('option');
+      option.value = project.id;
+      const baseName = project.name ? project.name : '(Unnamed Project)';
+      option.textContent = project.archived ? `${baseName} (Archived)` : baseName;
+      select.appendChild(option);
+    });
+
+    if (selectedId) {
+      const exists = Array.from(select.options).some((option) => option.value === selectedId);
+      if (!exists) {
+        const fallback = document.createElement('option');
+        fallback.value = selectedId;
+        fallback.textContent = 'Unknown Project';
+        select.appendChild(fallback);
+      }
+      select.value = selectedId;
+    } else {
+      select.value = '';
+    }
+  }
+
+  function updateSessionDurationDisplay() {
+    const durationEl = $('sessionDuration');
+    if (!durationEl) return;
+
+    const startValue = $('sessionStart')?.value;
+    const endValue = $('sessionEnd')?.value;
+
+    if (!startValue || !endValue) {
+      durationEl.textContent = '—';
+      return;
+    }
+
+    const start = parseDateTimeLocal(startValue);
+    const end = parseDateTimeLocal(endValue);
+
+    if (start === null || end === null) {
+      durationEl.textContent = '—';
+      return;
+    }
+
+    const diff = end - start;
+    if (diff <= 0) {
+      durationEl.textContent = 'End must be after start';
+      return;
+    }
+
+    durationEl.textContent = formatHM(Math.round(diff / 1000));
+  }
+
+  function openSessionModal(id) {
+    const session = state.sessions.find((item) => item.id === id);
+    if (!session) return;
+
+    editingSessionId = id;
+    populateSessionProjectOptions(session.projectId);
+
+    $('sessionStart').value = toLocalDateTimeInputValue(session.start);
+    $('sessionEnd').value = toLocalDateTimeInputValue(session.end);
+    $('sessionNote').value = session.note ?? '';
+    $('editingSessionId').value = session.id;
+    $('sessionModalTitle').textContent = 'Edit Session';
+
+    updateSessionDurationDisplay();
+
+    const modal = $('sessionModal');
+    modal.classList.remove('hidden');
+
+    setTimeout(() => $('sessionStart').focus(), 0);
+  }
+
+  function closeSessionModal() {
+    editingSessionId = null;
+    const modal = $('sessionModal');
+    if (modal) modal.classList.add('hidden');
+    const hiddenId = $('editingSessionId');
+    if (hiddenId) hiddenId.value = '';
+    const durationEl = $('sessionDuration');
+    if (durationEl) durationEl.textContent = '—';
+  }
+
+  function saveSessionFromModal() {
+    if (!editingSessionId) return;
+
+    const session = state.sessions.find((item) => item.id === editingSessionId);
+    if (!session) return;
+
+    const projectId = $('sessionProject').value;
+    if (!projectId) {
+      alert('Select a project for this session.');
+      return;
+    }
+
+    const startValue = $('sessionStart').value;
+    const endValue = $('sessionEnd').value;
+    const start = parseDateTimeLocal(startValue);
+    const end = parseDateTimeLocal(endValue);
+
+    if (start === null) {
+      alert('Provide a valid start date and time.');
+      return;
+    }
+    if (end === null) {
+      alert('Provide a valid end date and time.');
+      return;
+    }
+    if (end <= start) {
+      alert('End time must be after the start time.');
+      return;
+    }
+
+    const note = $('sessionNote').value.trim();
+    const seconds = Math.max(1, Math.round((end - start) / 1000));
+
+    Object.assign(session, { projectId, start, end, seconds, note });
+
+    schedulePersist();
+    closeSessionModal();
     render();
   }
 
@@ -290,6 +438,31 @@
     });
   }
 
+  function createSessionRow(session, { includeProjectName = false } = {}) {
+    const row = document.createElement('div');
+    row.className = 'entry-row';
+
+    const text = document.createElement('div');
+    text.className = 'entry-text';
+    const project = state.projects.find((item) => item.id === session.projectId);
+    const projectName = project ? project.name || '(Unnamed Project)' : 'Unknown Project';
+    const notePart = session.note ? ` — <i>${sanitize(session.note)}</i>` : '';
+    const base = `• ${fmtDT(session.start)} — ${formatHM(session.seconds)}`;
+    text.innerHTML = `${includeProjectName ? `${sanitize(projectName)} ${base}` : base}${notePart}`;
+
+    const actions = document.createElement('div');
+    actions.className = 'entry-actions';
+    const editButton = document.createElement('button');
+    editButton.className = 'btn-ghost';
+    editButton.type = 'button';
+    editButton.textContent = 'Edit';
+    editButton.onclick = () => openSessionModal(session.id);
+    actions.appendChild(editButton);
+
+    row.append(text, actions);
+    return row;
+  }
+
   function buildArchivedSessions(projectId) {
     const wrapper = document.createElement('div');
     wrapper.className = 'sessions-wrap';
@@ -307,12 +480,8 @@
       details.appendChild(empty);
     } else {
       sessions.forEach((session) => {
-        const line = document.createElement('div');
-        line.className = 'session-line';
-        line.innerHTML = `• ${fmtDT(session.start)} — ${formatHM(session.seconds)}${
-          session.note ? ` — <i>${sanitize(session.note)}</i>` : ''
-        }`;
-        details.appendChild(line);
+        const row = createSessionRow(session);
+        details.appendChild(row);
       });
     }
 
@@ -502,11 +671,7 @@
         const list = document.createElement('div');
         list.className = 'project-notes';
         entries.forEach((entry) => {
-          const row = document.createElement('div');
-          row.style.margin = '6px 0';
-          row.innerHTML = `• ${fmtDT(entry.start)} — ${formatHM(entry.seconds)}${
-            entry.note ? ` — <i>${sanitize(entry.note)}</i>` : ''
-          }`;
+          const row = createSessionRow(entry);
           list.appendChild(row);
         });
         details.appendChild(list);
@@ -677,6 +842,14 @@
       if (event.target.id === 'projectModal') closeProjectModal();
     };
     $('saveProject').onclick = saveProjectFromModal;
+
+    $('closeSessionModal').onclick = closeSessionModal;
+    $('sessionModal').onclick = (event) => {
+      if (event.target.id === 'sessionModal') closeSessionModal();
+    };
+    $('saveSession').onclick = saveSessionFromModal;
+    $('sessionStart').addEventListener('input', updateSessionDurationDisplay);
+    $('sessionEnd').addEventListener('input', updateSessionDurationDisplay);
 
     $('startBtn').onclick = startTimer;
     $('stopBtn').onclick = stopTimer;
