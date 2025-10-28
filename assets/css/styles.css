@@ -142,6 +142,18 @@ header .spacer {
   align-items: center;
 }
 
+.input-split {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+@media (max-width: 520px) {
+  .input-split {
+    grid-template-columns: 1fr;
+  }
+}
+
 input,
 textarea,
 select {
