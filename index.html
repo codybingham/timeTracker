@@ -144,28 +144,28 @@
           <button id="closeProject" class="btn-ghost" type="button" aria-label="Close project form">✕</button>
         </div>
         <div class="b">
-          <div class="form-grid" style="margin-bottom: 10px">
-            <div>
+          <div class="form-grid modal-form-grid">
+            <div class="form-field">
               <label class="muted" for="projNo">Project Number</label>
               <input id="projNo" placeholder="e.g. 455227" required />
             </div>
-            <div>
+            <div class="form-field">
               <label class="muted" for="taskNo">Task Number</label>
               <input id="taskNo" placeholder="e.g. HTK-03" />
             </div>
-            <div style="grid-column: 1 / -1">
+            <div class="form-field full-span">
               <label class="muted" for="projName">Project Name</label>
               <input id="projName" placeholder="e.g. BBL-1000 Hydraulic Tank" required />
             </div>
-            <div>
+            <div class="form-field">
               <label class="muted" for="startDate">Start Date</label>
               <input id="startDate" type="date" required />
             </div>
-            <div>
+            <div class="form-field">
               <label class="muted" for="endDate">End Date (optional)</label>
               <input id="endDate" type="date" />
             </div>
-            <div>
+            <div class="form-field">
               <label class="muted" for="statusSel">Status</label>
               <select id="statusSel">
                 <option>In Queue</option>
@@ -174,7 +174,7 @@
                 <option>Completed</option>
               </select>
             </div>
-            <div style="grid-column: 1 / -1">
+            <div class="form-field full-span">
               <label class="muted" for="projNote">Notes</label>
               <textarea id="projNote" placeholder="Optional context for this project..."></textarea>
             </div>
@@ -200,30 +200,30 @@
           <button id="closeManualModal" class="btn-ghost" type="button" aria-label="Close manual entry form">✕</button>
         </div>
         <div class="b">
-          <div class="form-grid session-form" style="margin-bottom: 12px">
-            <div>
+          <div class="form-grid session-form modal-form-grid">
+            <div class="form-field field-project">
               <label class="muted" for="manualProject">Project</label>
               <select id="manualProject" required></select>
             </div>
-            <div>
+            <div class="form-field field-start">
               <label class="muted" for="manualStartDate">Start</label>
               <div class="input-split">
                 <input id="manualStartDate" type="date" required />
                 <input id="manualStartTime" type="time" required />
               </div>
             </div>
-            <div>
+            <div class="form-field field-end">
               <label class="muted" for="manualEndDate">End</label>
               <div class="input-split">
                 <input id="manualEndDate" type="date" required />
                 <input id="manualEndTime" type="time" required />
               </div>
             </div>
-            <div>
+            <div class="form-field field-duration">
               <label class="muted" for="manualDuration">Duration</label>
               <div id="manualDuration" class="session-duration" aria-live="polite">—</div>
             </div>
-            <div style="grid-column: 1 / -1">
+            <div class="form-field field-notes full-span">
               <label class="muted" for="manualNote">Notes</label>
               <textarea id="manualNote" placeholder="Optional context for this session..."></textarea>
             </div>
@@ -248,30 +248,30 @@
           <button id="closeSessionModal" class="btn-ghost" type="button" aria-label="Close session form">✕</button>
         </div>
         <div class="b">
-          <div class="form-grid session-form" style="margin-bottom: 12px">
-            <div>
+          <div class="form-grid session-form modal-form-grid">
+            <div class="form-field field-project">
               <label class="muted" for="sessionProject">Project</label>
               <select id="sessionProject" required></select>
             </div>
-            <div>
+            <div class="form-field field-start">
               <label class="muted" for="sessionStartDate">Start</label>
               <div class="input-split">
                 <input id="sessionStartDate" type="date" required />
                 <input id="sessionStartTime" type="time" required />
               </div>
             </div>
-            <div>
+            <div class="form-field field-end">
               <label class="muted" for="sessionEndDate">End</label>
               <div class="input-split">
                 <input id="sessionEndDate" type="date" required />
                 <input id="sessionEndTime" type="time" required />
               </div>
             </div>
-            <div>
+            <div class="form-field field-duration">
               <label class="muted" for="sessionDuration">Duration</label>
               <div id="sessionDuration" class="session-duration" aria-live="polite">—</div>
             </div>
-            <div style="grid-column: 1 / -1">
+            <div class="form-field field-notes full-span">
               <label class="muted" for="sessionNote">Notes</label>
               <textarea id="sessionNote" placeholder="Optional context for this session..."></textarea>
             </div>
