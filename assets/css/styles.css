@@ -144,7 +144,7 @@ header .spacer {
 
 .input-split {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(160px, 1fr));
   gap: 8px;
 }
 
@@ -412,11 +412,59 @@ tbody td {
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: 12px;
+}
+
+.form-grid .form-field {
+  display: grid;
+  gap: 6px;
+}
+
+.form-grid .full-span {
+  grid-column: 1 / -1;
+}
+
+.modal .form-grid {
+  gap: 16px;
+  align-items: start;
+}
+
+.modal .modal-form-grid {
+  margin-bottom: 12px;
+}
+
+.modal .form-grid .form-field {
+  align-content: start;
 }
 
 .session-form {
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "project"
+    "start"
+    "end"
+    "duration"
+    "notes";
+}
+
+.session-form .field-project {
+  grid-area: project;
+}
+
+.session-form .field-start {
+  grid-area: start;
+}
+
+.session-form .field-end {
+  grid-area: end;
+}
+
+.session-form .field-duration {
+  grid-area: duration;
+}
+
+.session-form .field-notes {
+  grid-area: notes;
 }
 
 .session-duration {
@@ -434,6 +482,15 @@ tbody td {
 @media (min-width: 680px) {
   .form-grid {
     grid-template-columns: 1fr 1fr 1fr 1fr;
+  }
+
+  .session-form {
+    grid-template-columns: repeat(2, minmax(320px, 1fr));
+    grid-template-areas:
+      "project project"
+      "start end"
+      "duration duration"
+      "notes notes";
   }
 }
 
