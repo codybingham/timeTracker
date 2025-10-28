@@ -99,7 +99,33 @@
   }
 
   function pickerFormat(type) {
-    return type === 'datetime' ? 'Y-m-d\\TH:i' : 'Y-m-d';
+    if (type === 'datetime') return 'Y-m-d\\TH:i';
+    if (type === 'time') return 'H:i';
+    return 'Y-m-d';
+  }
+
+  function setDateTimeInputs(prefix, timestamp) {
+    const dateInput = $(`${prefix}Date`);
+    const timeInput = $(`${prefix}Time`);
+    if (!dateInput || !timeInput) return;
+
+    const combined = toLocalDateTimeInputValue(timestamp);
+    if (!combined) {
+      dateInput.value = '';
+      timeInput.value = '';
+      return;
+    }
+
+    const [datePart, timePart] = combined.split('T');
+    dateInput.value = datePart ?? '';
+    timeInput.value = timePart ?? '';
+  }
+
+  function getDateTimeInputValue(prefix) {
+    const dateValue = $(`${prefix}Date`)?.value;
+    const timeValue = $(`${prefix}Time`)?.value;
+    if (!dateValue || !timeValue) return null;
+    return `${dateValue}T${timeValue}`;
   }
 
   function installNativePickerFallback(input) {
@@ -135,8 +161,10 @@
       allowInput: true,
       clickOpens: true,
       dateFormat: format,
-      enableTime: type === 'datetime',
+      enableTime: type !== 'date',
+      noCalendar: type === 'time',
       minuteIncrement: 1,
+      time_24hr: false,
       disableMobile: false,
       onChange: () => {
         input.dispatchEvent(new Event('input', { bubbles: true }));
@@ -198,10 +226,14 @@
   function initializePickers() {
     syncPickerValue('startDate', 'date');
     syncPickerValue('endDate', 'date');
-    syncPickerValue('sessionStart', 'datetime');
-    syncPickerValue('sessionEnd', 'datetime');
-    syncPickerValue('manualStart', 'datetime');
-    syncPickerValue('manualEnd', 'datetime');
+    syncPickerValue('sessionStartDate', 'date');
+    syncPickerValue('sessionStartTime', 'time');
+    syncPickerValue('sessionEndDate', 'date');
+    syncPickerValue('sessionEndTime', 'time');
+    syncPickerValue('manualStartDate', 'date');
+    syncPickerValue('manualStartTime', 'time');
+    syncPickerValue('manualEndDate', 'date');
+    syncPickerValue('manualEndTime', 'time');
   }
 
   function openProjectModal(mode = 'add', id = null) {
@@ -322,8 +354,8 @@
     const durationEl = $('sessionDuration');
     if (!durationEl) return;
 
-    const startValue = $('sessionStart')?.value;
-    const endValue = $('sessionEnd')?.value;
+    const startValue = getDateTimeInputValue('sessionStart');
+    const endValue = getDateTimeInputValue('sessionEnd');
 
     if (!startValue || !endValue) {
       durationEl.textContent = '—';
@@ -351,8 +383,8 @@
     const durationEl = $('manualDuration');
     if (!durationEl) return;
 
-    const startValue = $('manualStart')?.value;
-    const endValue = $('manualEnd')?.value;
+    const startValue = getDateTimeInputValue('manualStart');
+    const endValue = getDateTimeInputValue('manualEnd');
 
     if (!startValue || !endValue) {
       durationEl.textContent = '—';
@@ -383,20 +415,22 @@
     editingSessionId = id;
     populateSessionProjectOptions(session.projectId);
 
-    $('sessionStart').value = toLocalDateTimeInputValue(session.start);
-    $('sessionEnd').value = toLocalDateTimeInputValue(session.end);
+    setDateTimeInputs('sessionStart', session.start);
+    setDateTimeInputs('sessionEnd', session.end);
     $('sessionNote').value = session.note ?? '';
     $('editingSessionId').value = session.id;
     $('sessionModalTitle').textContent = 'Edit Session';
 
-    syncPickerValue('sessionStart', 'datetime');
-    syncPickerValue('sessionEnd', 'datetime');
+    syncPickerValue('sessionStartDate', 'date');
+    syncPickerValue('sessionStartTime', 'time');
+    syncPickerValue('sessionEndDate', 'date');
+    syncPickerValue('sessionEndTime', 'time');
     updateSessionDurationDisplay();
 
     const modal = $('sessionModal');
     modal.classList.remove('hidden');
 
-    setTimeout(() => $('sessionStart').focus(), 0);
+    setTimeout(() => $('sessionStartDate').focus(), 0);
   }
 
   function closeSessionModal() {
@@ -422,16 +456,16 @@
     populateSessionProjectOptions(defaultProject || undefined, 'manualProject');
 
     const now = Date.now();
-    const defaultEnd = toLocalDateTimeInputValue(now);
-    const defaultStart = toLocalDateTimeInputValue(now - 3600000);
 
     $('manualProject').value = defaultProject || '';
-    $('manualStart').value = defaultStart;
-    $('manualEnd').value = defaultEnd;
+    setDateTimeInputs('manualStart', now - 3600000);
+    setDateTimeInputs('manualEnd', now);
 
     resetManualModal();
-    syncPickerValue('manualStart', 'datetime');
-    syncPickerValue('manualEnd', 'datetime');
+    syncPickerValue('manualStartDate', 'date');
+    syncPickerValue('manualStartTime', 'time');
+    syncPickerValue('manualEndDate', 'date');
+    syncPickerValue('manualEndTime', 'time');
     updateManualDurationDisplay();
 
     const modal = $('manualModal');
@@ -453,8 +487,8 @@
       return;
     }
 
-    const startValue = $('manualStart').value;
-    const endValue = $('manualEnd').value;
+    const startValue = getDateTimeInputValue('manualStart');
+    const endValue = getDateTimeInputValue('manualEnd');
     const start = parseDateTimeLocal(startValue);
     const end = parseDateTimeLocal(endValue);
 
@@ -501,8 +535,8 @@
       return;
     }
 
-    const startValue = $('sessionStart').value;
-    const endValue = $('sessionEnd').value;
+    const startValue = getDateTimeInputValue('sessionStart');
+    const endValue = getDateTimeInputValue('sessionEnd');
     const start = parseDateTimeLocal(startValue);
     const end = parseDateTimeLocal(endValue);
 
@@ -845,6 +879,10 @@
     const [start, end] = currentRange();
     const rangeLabel = $('rangeLabel');
 
+    $('tabDaily')?.setAttribute('aria-selected', view === 'daily' ? 'true' : 'false');
+    $('tabWeekly')?.setAttribute('aria-selected', view === 'weekly' ? 'true' : 'false');
+    $('tabAll')?.setAttribute('aria-selected', view === 'all' ? 'true' : 'false');
+
     if (view === 'daily') {
       rangeLabel.textContent = start.toLocaleDateString();
     } else if (view === 'weekly') {
@@ -1125,8 +1163,10 @@
       if (event.target.id === 'sessionModal') closeSessionModal();
     };
     $('saveSession').onclick = saveSessionFromModal;
-    $('sessionStart').addEventListener('input', updateSessionDurationDisplay);
-    $('sessionEnd').addEventListener('input', updateSessionDurationDisplay);
+    ['sessionStartDate', 'sessionStartTime', 'sessionEndDate', 'sessionEndTime'].forEach((id) => {
+      const input = $(id);
+      if (input) input.addEventListener('input', updateSessionDurationDisplay);
+    });
 
     $('openManualModal').onclick = openManualEntryModal;
     $('closeManualModal').onclick = closeManualModal;
@@ -1134,8 +1174,10 @@
       if (event.target.id === 'manualModal') closeManualModal();
     };
     $('saveManualEntry').onclick = saveManualEntryFromModal;
-    $('manualStart').addEventListener('input', updateManualDurationDisplay);
-    $('manualEnd').addEventListener('input', updateManualDurationDisplay);
+    ['manualStartDate', 'manualStartTime', 'manualEndDate', 'manualEndTime'].forEach((id) => {
+      const input = $(id);
+      if (input) input.addEventListener('input', updateManualDurationDisplay);
+    });
 
     $('startBtn').onclick = startTimer;
     $('stopBtn').onclick = stopTimer;
