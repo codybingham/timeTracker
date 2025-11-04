@@ -225,7 +225,11 @@
     updatePermissionNotice(status) {
       if (!this.permissionNotice) return;
       if (status === 'granted') {
-        this.permissionNotice.classList.add('hidden');
+        if (this.permissionNotice.parentElement) {
+          this.permissionNotice.parentElement.removeChild(this.permissionNotice);
+        }
+        this.permissionNotice = null;
+        this.permissionButton = null;
         return;
       }
 
