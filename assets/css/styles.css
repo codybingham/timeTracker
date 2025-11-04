@@ -409,6 +409,62 @@ tbody td {
   padding: 16px;
 }
 
+.idle-modal-summary {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+
+.idle-modal-summary h3 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.idle-modal-summary p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.idle-modal-actions {
+  display: grid;
+  gap: 10px;
+}
+
+.idle-modal-actions .row {
+  justify-content: flex-start;
+}
+
+.idle-modal-section {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.idle-modal-section .row {
+  justify-content: flex-end;
+}
+
+#idlePermissionNotice {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(76, 201, 240, 0.35);
+  background: rgba(14, 20, 32, 0.7);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+#idlePermissionNotice.is-disabled {
+  border-color: rgba(150, 170, 200, 0.3);
+  background: rgba(12, 16, 24, 0.6);
+}
+
+#idlePermissionNotice button {
+  margin-left: auto;
+}
+
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

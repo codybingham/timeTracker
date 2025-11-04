@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="assets/css/styles.css" />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234cc9f0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M3 12h5l3-8 3 16 3-8h4'/></svg>" />
     <script src="assets/vendor/flatpickr/flatpickr.min.js" defer></script>
+    <script src="assets/js/idleDetection.js" defer></script>
     <script src="assets/js/app.js" defer></script>
   </head>
   <body>
@@ -86,6 +87,12 @@
                   <button id="saveNoteBtn" class="btn-primary" type="button">Save</button>
                   <button id="cancelNoteBtn" class="btn-ghost" type="button">Cancel</button>
                 </div>
+              </div>
+              <div id="idlePermissionNotice" class="hidden" role="status">
+                <span data-idle-permission-message>
+                  Idle detection permission is needed to pause the timer when your screen locks.
+                </span>
+                <button id="idlePermissionButton" class="btn-ghost" type="button">Enable Away Tracking</button>
               </div>
             </div>
           </section>
@@ -279,6 +286,45 @@
           <input type="hidden" id="editingSessionId" />
           <div class="row" style="justify-content: flex-end">
             <button id="saveSession" class="btn-primary" type="button">Save Session</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="idleModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="idleModalTitle">
+      <div class="dialog">
+        <div class="h">
+          <h2 id="idleModalTitle">Away time detected</h2>
+        </div>
+        <div class="b">
+          <div class="idle-modal-summary">
+            <h3 id="idleSummary">Away for 0s</h3>
+            <p id="idleDetail"></p>
+          </div>
+          <div id="idleBaseActions" class="idle-modal-actions">
+            <button id="idleDiscard" class="btn-ghost" type="button">Discard</button>
+            <button id="idleAllocate" class="btn-primary" type="button">Allocate to Project</button>
+            <button id="idleCreate" class="btn-accent" type="button">Create New Project</button>
+          </div>
+          <div id="idleAllocateSection" class="idle-modal-section hidden">
+            <label class="muted" for="idleProjectSelect">Project</label>
+            <select id="idleProjectSelect"></select>
+            <label class="muted" for="idleEntryNote">Note (optional)</label>
+            <textarea id="idleEntryNote" placeholder="Optional note about this away time..."></textarea>
+            <div class="row">
+              <button id="idleAllocateBack" class="btn-ghost" type="button">Back</button>
+              <button id="idleAllocateConfirm" class="btn-primary" type="button">Save Entry</button>
+            </div>
+          </div>
+          <div id="idleCreateSection" class="idle-modal-section hidden">
+            <label class="muted" for="idleNewProjectName">Project Name</label>
+            <input id="idleNewProjectName" placeholder="e.g. Team Meeting" />
+            <label class="muted" for="idleNewProjectNote">Project Note (optional)</label>
+            <textarea id="idleNewProjectNote" placeholder="Optional description for this project..."></textarea>
+            <div class="row">
+              <button id="idleCreateBack" class="btn-ghost" type="button">Back</button>
+              <button id="idleCreateConfirm" class="btn-accent" type="button">Create &amp; Log Time</button>
+            </div>
           </div>
         </div>
       </div>
