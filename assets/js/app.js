@@ -10,6 +10,7 @@
   let view = 'daily';
   let anchor = today();
   const pickerRegistry = new Map();
+  let idleManager = null;
 
   const $ = (id) => document.getElementById(id);
 
@@ -814,6 +815,71 @@
     showNoteBar();
   }
 
+  function createSessionFromIdle({ projectId, start, end, seconds, note, source }) {
+    if (!projectId || typeof start !== 'number' || typeof end !== 'number') return null;
+    const duration = seconds ?? Math.max(1, Math.round((end - start) / 1000));
+    const session = {
+      id: uid(),
+      projectId,
+      start,
+      end,
+      seconds: duration,
+      note: note ?? '',
+      source: source ?? 'idle-detection',
+    };
+
+    state.sessions.push(session);
+    schedulePersist();
+    render();
+    return session;
+  }
+
+  function createProjectFromIdle({ name, note }) {
+    const trimmedName = typeof name === 'string' ? name.trim() : '';
+    if (!trimmedName) return null;
+
+    const now = new Date();
+    const localDate = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
+      .toISOString()
+      .slice(0, 10);
+    const uniqueSuffix = `${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(
+      now.getSeconds(),
+    ).padStart(2, '0')}`;
+    const project = {
+      id: uid(),
+      projectNo: `AWAY-${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(
+        now.getDate(),
+      ).padStart(2, '0')}-${uniqueSuffix}`,
+      taskNo: '',
+      name: trimmedName,
+      startDate: localDate,
+      endDate: '',
+      status: 'In Queue',
+      note: note ?? '',
+      archived: false,
+    };
+
+    state.projects.push(project);
+    schedulePersist();
+    render();
+    return project;
+  }
+
+  function listProjectsForIdle() {
+    return state.projects.map((project) => ({
+      id: project.id,
+      name: project.name,
+      archived: project.archived,
+    }));
+  }
+
+  function handleIdleLockEvent() {
+    if (!state.activeTimer) return null;
+    const projectId = state.activeTimer.projectId;
+    stopTimer();
+    return { projectId };
+  }
+
   function resumeActiveTimer() {
     if (!state.activeTimer) return;
     $('projectSelect').value = state.activeTimer.projectId;
@@ -1192,6 +1258,23 @@
     $('btnClear').onclick = clearAll;
   }
 
+  function initializeIdleDetection() {
+    if (!window.TimeTrackerIdle || typeof window.TimeTrackerIdle.createManager !== 'function') {
+      return;
+    }
+
+    idleManager = window.TimeTrackerIdle.createManager({
+      threshold: 60000,
+      awayThreshold: 60000,
+      onLock: () => handleIdleLockEvent(),
+      listProjects: () => listProjectsForIdle(),
+      createProject: (payload) => createProjectFromIdle(payload),
+      createSession: (payload) => createSessionFromIdle(payload),
+    });
+
+    window.timeTrackerIdleManager = idleManager;
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     registerEvents();
     initializePickers();
@@ -1200,5 +1283,7 @@
     if (state.activeTimer) {
       resumeActiveTimer();
     }
+
+    initializeIdleDetection();
   });
 })();
